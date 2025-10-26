@@ -18,7 +18,8 @@
       "@domain/*": ["src/domain/*"],
       "@app/*": ["src/application/*"],
       "@infra/*": ["src/infra/*"],
-      "@interfaces/*": ["src/interfaces/*"]
+      "@interfaces/*": ["src/interfaces/*"],
+      "@shared/*": ["src/shared/*"]
     },
     "strict": true,
     "incremental": true,
