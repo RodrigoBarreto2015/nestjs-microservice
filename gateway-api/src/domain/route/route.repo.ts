@@ -1,6 +1,6 @@
 import { Route } from './route.entity';
 
-export interface RouteRepo {
+export interface RouteRepository {
   findAll(): Promise<Route[]>;
   findByPrefix(prefix: string): Promise<Route | null>;
   create(route: Route): Promise<Route>;

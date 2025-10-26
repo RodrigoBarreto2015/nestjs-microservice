@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Upstream {
+  id      String  @id
+  name    String  @unique
+  baseUrl String
+  enabled Boolean @default(true)
+
+  //JWT
+  jwtRequired  Boolean @default(false)
+  jwtIssuer    String?
+  jwtAudiences String?
+  jwksUrl      String?
+  jwtAlg       String?
+
+  timeoutMs  Int @default(8000)
+  cbErrorPct Int @default(50)
+  cbResetMs  Int @default(10000)
+
+  canaryUrl    String?
+  canaryWeight Int?
+  shadowUrl    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Route     Route[]
+}
+
+model Route {
+  id         String   @id
+  prefix     String   @unique
+  rewrite    String?
+  upstreamId String
+  upstream   Upstream @relation(fields: [upstreamId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
