@@ -1,15 +1,20 @@
 import { Upstream } from '@domain/upstream/upstream.entity';
 import { UpstreamRepository } from '@domain/upstream/upstream.repo';
-import { PrismaService } from './prisma.service';
+import { PrismaService } from './service/prisma.service';
 import { UpstreamMapper } from './mapper/upstream.mapper';
+import { Injectable } from '@nestjs/common';
 
+@Injectable()
 export class UpstreamPrismaRepo implements UpstreamRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll(): Promise<Upstream[]> {
     return (
       await this.prisma.upstream.findMany({ orderBy: { name: 'asc' } })
-    ).map((upstream) => UpstreamMapper.toDomain(upstream));
+    ).map((upstream) => {
+      console.log('Mapping upstream: ', upstream);
+      return UpstreamMapper.toDomain(upstream);
+    });
   }
 
   async findById(id: string): Promise<Upstream | null> {

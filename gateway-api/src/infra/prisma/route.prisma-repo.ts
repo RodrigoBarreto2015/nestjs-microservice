@@ -1,8 +1,10 @@
 import { Route } from '@domain/route/route.entity';
 import { RouteRepository } from '@domain/route/route.repo';
-import { PrismaService } from './prisma.service';
+import { PrismaService } from './service/prisma.service';
 import { RouteMapper } from './mapper/route.mapper';
+import { Injectable } from '@nestjs/common';
 
+@Injectable()
 export class RoutePrismaRepo implements RouteRepository {
   constructor(private readonly prisma: PrismaService) {}
 
