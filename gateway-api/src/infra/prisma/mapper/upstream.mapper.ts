@@ -1,20 +1,20 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Upstream } from '@domain/upstream/upstream.entity';
-import { UpstreamPrisma } from './upstream.prisma.type';
+import type { Upstream as UpstreamPrisma } from '@prisma/client';
 import { JwtConfig } from '@shared/types/JwtConfig';
 
 export class UpstreamMapper {
-  static toDomain(raw: UpstreamPrisma | undefined): Upstream {
+  static toDomain(raw: UpstreamPrisma): Upstream {
     if (!raw) {
       throw new Error('Upstream not found');
     }
 
     return new Upstream(
-      raw.id,
-      raw.name,
-      raw.baseUrl,
-      raw.enabled,
+      raw.id as string,
+      raw.name as string,
+      raw.baseUrl as string,
+      raw.enabled as boolean,
       {
         required: raw.jwtRequired,
         audience: raw.jwtAudiences || undefined,
@@ -22,14 +22,14 @@ export class UpstreamMapper {
         jwksUri: raw.jwksUrl || undefined,
         alg: raw.jwtAlg || undefined,
       },
-      raw.timeoutMs,
-      raw.cbErrorPct,
-      raw.cbResetMs,
-      raw.canaryUrl ?? undefined,
-      raw.canaryWeight ?? undefined,
-      raw.shadowUrl ?? undefined,
-      raw.createdAt,
-      raw.updatedAt,
+      raw.timeoutMs as number,
+      raw.cbErrorPct as number,
+      raw.cbResetMs as number,
+      (raw.canaryUrl as string) ?? undefined,
+      (raw.canaryWeight as number) ?? undefined,
+      (raw.shadowUrl as string) ?? undefined,
+      raw.createdAt as Date,
+      raw.updatedAt as Date,
     );
   }
 

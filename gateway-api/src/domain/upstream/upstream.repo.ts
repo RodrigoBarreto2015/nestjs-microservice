@@ -1,10 +1,10 @@
 import { Upstream } from './upstream.entity';
 
-export interface UpstreamRepository {
-  findAll(): Promise<Upstream[]>;
-  findById(id: string): Promise<Upstream | null>;
-  findByName(name: string): Promise<Upstream | null>;
-  create(upstream: Upstream): Promise<Upstream>;
-  update(upstream: Upstream): Promise<Upstream>;
-  delete(id: string): Promise<void>;
+export abstract class UpstreamRepository {
+  abstract findAll(): Promise<Upstream[]>;
+  abstract findById(id: string): Promise<Upstream | null>;
+  abstract findByName(name: string): Promise<Upstream | null>;
+  abstract create(upstream: Upstream): Promise<Upstream>;
+  abstract update(upstream: Upstream): Promise<Upstream>;
+  abstract delete(id: string): Promise<void>;
 }
