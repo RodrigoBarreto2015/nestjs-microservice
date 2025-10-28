@@ -1,4 +1,5 @@
 import { ProxyAdapter } from '@infra/proxy/proxy.adapter';
+import { ThrottleByIdentityGuard } from '@interfaces/security/throttle-by-identity.guard';
 import { UpstreamJwtGuard } from '@interfaces/security/upstream-jwt.guard';
 import {
   All,
@@ -14,7 +15,7 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 export class ProxyController {
   private proxy = new ProxyAdapter();
 
-  @UseGuards(UpstreamJwtGuard)
+  @UseGuards(UpstreamJwtGuard, ThrottleByIdentityGuard)
   @All('*')
   async route(@Req() req: FastifyRequest, @Res() reply: FastifyReply) {
     const request = req.resolved?.upstream || undefined;
