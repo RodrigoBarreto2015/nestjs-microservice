@@ -1,9 +1,7 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { UpstreamsController } from './http/upstreams.controller';
-import { UpstreamRepository } from '@domain/upstream/upstream.repo';
 import { UpstreamPrismaRepo } from '@infra/prisma/upstream.prisma-repo';
-import { RouteRepository } from '@domain/route/route.repo';
 import { RoutePrismaRepo } from '@infra/prisma/route.prisma-repo';
 import { CreateUpstreamUseCase } from '@app/upstream/use-cases/create-upstream.usecase';
 import { ListUpstreamsUseCase } from '@app/upstream/use-cases/list-upstreams.usecase';
@@ -11,6 +9,11 @@ import { PrismaService } from '@infra/prisma/service/prisma.service';
 import { RouteResolutionMiddleware } from './http/middleware/route-resolution.middleware';
 import { JwtVerifier } from '@infra/auth/jwt-verifier';
 import { UpstreamJwtGuard } from './security/upstream-jwt.guard';
+import { ProxyController } from './http/proxy.controller';
+import { CreateRouteUseCase } from '@app/route/use-cases/create-route.usecase';
+import { ListRoutesUseCase } from '@app/route/use-cases/list-route.usecase';
+import { RoutesController } from './http/routes.controller';
+import { RouteRepository, UpstreamRepository } from '@app/ports';
 
 @Module({
   imports: [
@@ -18,7 +21,7 @@ import { UpstreamJwtGuard } from './security/upstream-jwt.guard';
       isGlobal: true,
     }),
   ],
-  controllers: [UpstreamsController],
+  controllers: [UpstreamsController, RoutesController, ProxyController],
   providers: [
     PrismaService,
     JwtVerifier,
@@ -26,7 +29,7 @@ import { UpstreamJwtGuard } from './security/upstream-jwt.guard';
     //Repositories
     { provide: UpstreamRepository, useClass: UpstreamPrismaRepo },
     { provide: RouteRepository, useClass: RoutePrismaRepo },
-    //use cases
+    //upstream use cases
     {
       provide: CreateUpstreamUseCase,
       useFactory: (upstreamRepo: UpstreamRepository) =>
@@ -38,6 +41,19 @@ import { UpstreamJwtGuard } from './security/upstream-jwt.guard';
       useFactory: (upstreamRepo: UpstreamRepository) =>
         new ListUpstreamsUseCase(upstreamRepo),
       inject: [UpstreamRepository],
+    },
+    //upstream use cases
+    {
+      provide: CreateRouteUseCase,
+      useFactory: (routeRepo: RouteRepository) =>
+        new CreateRouteUseCase(routeRepo),
+      inject: [RouteRepository],
+    },
+    {
+      provide: ListRoutesUseCase,
+      useFactory: (routeRepo: RouteRepository) =>
+        new ListRoutesUseCase(routeRepo),
+      inject: [RouteRepository],
     },
   ],
 })

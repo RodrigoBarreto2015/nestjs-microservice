@@ -1,5 +1,5 @@
 import { Upstream } from '@domain/upstream/upstream.entity';
-import { UpstreamRepository } from '../ports';
+import { UpstreamRepository } from '../../ports';
 
 export class ListUpstreamsUseCase {
   constructor(private readonly upstreamRepository: UpstreamRepository) {}
