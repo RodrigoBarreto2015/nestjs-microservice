@@ -14,12 +14,16 @@ import { CreateRouteUseCase } from '@app/route/use-cases/create-route.usecase';
 import { ListRoutesUseCase } from '@app/route/use-cases/list-route.usecase';
 import { RoutesController } from './http/routes.controller';
 import { RouteRepository, UpstreamRepository } from '@app/ports';
+import { PrometheusModule } from '@willsoto/nestjs-prometheus';
+import { OtelModule } from '@infra/observability/otel.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    PrometheusModule.register(),
+    OtelModule,
   ],
   controllers: [UpstreamsController, RoutesController, ProxyController],
   providers: [

@@ -1,19 +1,25 @@
 import { RouteRepository, UpstreamRepository } from '@app/ports';
 import { Upstream } from '@domain/upstream/upstream.entity';
 import { Injectable, NestMiddleware } from '@nestjs/common';
-import { FastifyReply, FastifyRequest } from 'fastify';
+import { IncomingMessage, ServerResponse } from 'http';
 
 type Next = () => void;
 
 @Injectable()
-export class RouteResolutionMiddleware implements NestMiddleware {
+export class RouteResolutionMiddleware
+  implements NestMiddleware<IncomingMessage, ServerResponse>
+{
   constructor(
     private readonly routes: RouteRepository,
     private readonly upstreams: UpstreamRepository,
   ) {}
 
-  async use(req: FastifyRequest, _res: FastifyReply, next: Next) {
-    const url = req.raw.url ?? '/';
+  async use(
+    req: IncomingMessage & { resolved?: any; matchedPrefix?: string },
+    _res: ServerResponse,
+    next: Next,
+  ) {
+    const url = req.url ?? '/';
     const pathname = url.split('?', 1)[0];
 
     const all = await this.routes.findAll();
