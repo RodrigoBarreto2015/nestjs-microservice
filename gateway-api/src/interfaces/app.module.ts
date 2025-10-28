@@ -16,6 +16,10 @@ import { RoutesController } from './http/routes.controller';
 import { RouteRepository, UpstreamRepository } from '@app/ports';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { OtelModule } from '@infra/observability/otel.module';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { ThrottleByIdentityGuard } from './security/throttle-by-identity.guard';
+import { CacheModule } from '@nestjs/cache-manager';
+import { redisStore } from 'cache-manager-redis-yet';
 
 @Module({
   imports: [
@@ -24,12 +28,23 @@ import { OtelModule } from '@infra/observability/otel.module';
     }),
     PrometheusModule.register(),
     OtelModule,
+    ThrottlerModule.forRoot([{ ttl: 60, limit: 120 }]),
+    CacheModule.registerAsync({
+      isGlobal: true,
+      useFactory: async () => ({
+        store: await redisStore({
+          url: process.env.REDIS_URL || 'redis://localhost:6379',
+        }),
+        ttl: 15,
+      }),
+    }),
   ],
   controllers: [UpstreamsController, RoutesController, ProxyController],
   providers: [
     PrismaService,
     JwtVerifier,
     UpstreamJwtGuard,
+    ThrottleByIdentityGuard,
     //Repositories
     { provide: UpstreamRepository, useClass: UpstreamPrismaRepo },
     { provide: RouteRepository, useClass: RoutePrismaRepo },
