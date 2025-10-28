@@ -35,6 +35,7 @@ export class UpstreamJwtGuard implements CanActivate {
       });
 
       return true;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       throw new UnauthorizedException('Invalid token');
     }

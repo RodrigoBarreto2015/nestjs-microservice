@@ -1,6 +1,8 @@
 import { AppModule } from '@interfaces/app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import FastifyReply from '@fastify/reply-from';
+
 import {
   FastifyAdapter,
   NestFastifyApplication,
@@ -14,6 +16,15 @@ async function bootstrap() {
       trustProxy: true,
     }),
   );
+
+  const fastify = app.getHttpAdapter().getInstance();
+
+  await fastify.register(FastifyReply, {
+    undici: {
+      bodyTimeout: 30_000,
+      headersTimeout: 30_000,
+    },
+  });
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 

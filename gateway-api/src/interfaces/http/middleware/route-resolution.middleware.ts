@@ -1,4 +1,4 @@
-import type { RouteRepository, UpstreamRepository } from '@app/upstream/ports';
+import { RouteRepository, UpstreamRepository } from '@app/ports';
 import { Upstream } from '@domain/upstream/upstream.entity';
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { FastifyReply, FastifyRequest } from 'fastify';

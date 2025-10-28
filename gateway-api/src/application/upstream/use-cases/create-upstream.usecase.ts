@@ -1,7 +1,7 @@
 import { Upstream } from '@domain/upstream/upstream.entity';
 import { CreateUpstreamInput } from '../dto';
 import { randomUUID } from 'node:crypto';
-import { UpstreamRepository } from '../ports';
+import { UpstreamRepository } from '../../ports';
 
 export class CreateUpstreamUseCase {
   constructor(private readonly upstreamsRepository: UpstreamRepository) {}
