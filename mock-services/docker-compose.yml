@@ -1,0 +1,17 @@
+name: mock-services-stack
+services:
+  users-api:
+    build: 
+      context: ./user-api
+      dockerfile: Dockerfile
+    environment:
+      JWT_SECRET: jwt_secret2025
+      PORT: 4000
+    ports:
+      - "4000:4000"
+    networks:
+      - sharednet
+
+networks:
+  sharednet:
+    external: true

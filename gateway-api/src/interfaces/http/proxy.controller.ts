@@ -1,51 +1,19 @@
-import { ProxyAdapter } from '@infra/proxy/proxy.adapter';
-import { ThrottleByIdentityGuard } from '@interfaces/security/throttle-by-identity.guard';
-import { UpstreamJwtGuard } from '@interfaces/security/upstream-jwt.guard';
-import {
-  All,
-  Controller,
-  HttpStatus,
-  Req,
-  Res,
-  UseGuards,
-} from '@nestjs/common';
+import { All, Controller, Req, Res, UseGuards } from '@nestjs/common';
 import type { FastifyReply, FastifyRequest } from 'fastify';
+import { ThrottleByIdentityGuard } from '../security/throttle-by-identity.guard';
+import { UpstreamJwtGuard } from '../security/upstream-jwt.guard';
+import { ProxyService } from '@infra/proxy/proxy.service';
+
+const METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
 
 @Controller()
 export class ProxyController {
-  private proxy = new ProxyAdapter();
+  constructor(private readonly proxy: ProxyService) {}
 
   @UseGuards(UpstreamJwtGuard, ThrottleByIdentityGuard)
-  @All('*')
+  @All(METHODS)
   async route(@Req() req: FastifyRequest, @Res() reply: FastifyReply) {
-    const request = req.resolved?.upstream || undefined;
-
-    if (!request) {
-      return reply
-        .status(HttpStatus.NOT_FOUND)
-        .send({ error: 'No route for path' });
-    }
-
-    let target = request.baseUrl;
-    if (
-      request.canaryUrl &&
-      typeof request.canaryWeight === 'number' &&
-      request.canaryWeight > 0
-    ) {
-      const random = Math.floor(Math.random() * 100 + 1);
-      if (random < request.canaryWeight) {
-        target = request.canaryUrl;
-      }
-    }
-
-    if (request.shadowUrl) {
-      void this.proxy.sendShadow(
-        req as FastifyRequest & { rawBody?: Buffer },
-        request.shadowUrl,
-      );
-    }
-
-    const handler = this.proxy.handler(request, target);
-    return handler(req, reply);
+    console.log(reply);
+    return this.proxy.forward(req, reply);
   }
 }

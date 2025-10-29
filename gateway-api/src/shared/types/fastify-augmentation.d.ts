@@ -1,5 +1,5 @@
 import 'fastify';
-import type { Upstream } from '@domain/upstream/upstream.entity';
+import { Upstream } from '@domain/upstream/upstream.entity';
 
 declare module 'fastify' {
   interface FastifyRequest {

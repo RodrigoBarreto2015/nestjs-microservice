@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { Upstream } from '@domain/upstream/upstream.entity';
 import type { Upstream as UpstreamPrisma } from '@prisma/client';
+import { Upstream } from '@domain/upstream/upstream.entity';
 import { JwtConfig } from '@shared/types/JwtConfig';
 
 export class UpstreamMapper {

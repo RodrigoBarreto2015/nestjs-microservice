@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { Route } from '@domain/route/route.entity';
 import type { Route as RoutePrisma } from '@prisma/client';
+import { Route } from '@domain/route/route.entity';
 
 export class RouteMapper {
   static toDomain(raw: RoutePrisma): Route {
