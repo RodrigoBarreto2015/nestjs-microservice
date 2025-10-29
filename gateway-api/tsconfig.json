@@ -19,7 +19,7 @@
       "@app/*": ["src/application/*"],
       "@infra/*": ["src/infra/*"],
       "@interfaces/*": ["src/interfaces/*"],
-      "@shared/*": ["src/shared/*"]
+      "@shared/*": ["src/shared/*"],
     },
     "strict": true,
     "incremental": true,
@@ -30,5 +30,5 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
   },
-  "include": ["src/**/*.ts", "src/shared/types/*.d.ts"]
+  "include": ["src/**/*.ts", "src/shared/types/*.d.ts"],
 }

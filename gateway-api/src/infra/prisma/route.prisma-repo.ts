@@ -1,8 +1,15 @@
-import { Route } from '@domain/route/route.entity';
-import { RouteRepository } from '@domain/route/route.repo';
 import { PrismaService } from './service/prisma.service';
 import { RouteMapper } from './mapper/route.mapper';
 import { Injectable } from '@nestjs/common';
+import { RouteRepository } from '@app/ports';
+import { Route } from '@domain/route/route.entity';
+import { RouteWithUpstream } from '@shared/types/routeWithUpstream';
+import { Prisma } from '@prisma/client';
+import { UpstreamMapper } from './mapper/upstream.mapper';
+
+type RouteWithUpstreamRow = Prisma.RouteGetPayload<{
+  include: { upstream: true };
+}>;
 
 @Injectable()
 export class RoutePrismaRepo implements RouteRepository {
@@ -20,6 +27,22 @@ export class RoutePrismaRepo implements RouteRepository {
       return null;
     }
     return RouteMapper.toDomain(route);
+  }
+
+  async findAllEnabledWithUpstream(): Promise<RouteWithUpstream[] | null> {
+    const routes = await this.prisma.route.findMany({
+      include: { upstream: true },
+      orderBy: { prefix: 'desc' },
+    });
+
+    const filteredRoutes = routes.filter(
+      (route) => (route as RouteWithUpstreamRow).upstream?.enabled !== false,
+    );
+
+    return filteredRoutes.map((route) => ({
+      route: RouteMapper.toDomain(route),
+      upstream: UpstreamMapper.toDomain(route.upstream),
+    }));
   }
 
   async create(route: Route): Promise<Route> {

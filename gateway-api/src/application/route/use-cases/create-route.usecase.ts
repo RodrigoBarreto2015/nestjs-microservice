@@ -1,6 +1,6 @@
+import { randomUUID } from 'node:crypto';
 import { RouteRepository } from '@app/ports';
 import { Route } from '@domain/route/route.entity';
-import { randomUUID } from 'node:crypto';
 
 export class CreateRouteUseCase {
   constructor(private routes: RouteRepository) {}

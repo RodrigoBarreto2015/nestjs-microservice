@@ -1,0 +1,65 @@
+name: gateway-stack
+
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: gateway
+      POSTGRES_PASSWORD: gateway
+      POSTGRES_DB: gateway
+    ports:
+      - "54320:5432"
+    volumes:
+      - pg:/var/lib/postgresql/data
+    networks:
+      - sharednet
+
+  redis:
+    image: redis:7
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - sharednet
+
+  gateway-api:
+    build:
+      context: ./gateway-api
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://gateway:gateway@postgres:5432/gateway
+      REDIS_URL: redis://redis:6379
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318/v1/traces
+      NODE_ENV: production
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - sharednet
+
+  gateway-admin:
+    build:
+      context: ./gateway-admin
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      VITE_API_BASE_URL: http://localhost:3000
+    depends_on:
+      - gateway-api
+    ports:
+      - "8080:80"
+    networks:
+      - sharednet
+
+volumes:
+  pg: {}
+
+networks:
+  sharednet:
+    external: true
+  

@@ -1,8 +1,8 @@
-import { Upstream } from '@domain/upstream/upstream.entity';
-import { UpstreamRepository } from '@domain/upstream/upstream.repo';
 import { PrismaService } from './service/prisma.service';
 import { UpstreamMapper } from './mapper/upstream.mapper';
 import { Injectable } from '@nestjs/common';
+import { UpstreamRepository } from '@app/ports';
+import { Upstream } from '@domain/upstream/upstream.entity';
 
 @Injectable()
 export class UpstreamPrismaRepo implements UpstreamRepository {

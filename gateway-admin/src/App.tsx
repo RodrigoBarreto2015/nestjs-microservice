@@ -1,16 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import './App.css';
 import { useEffect, useState } from 'react';
+import { api } from './lib/api';
 type Upstream = { id: string; name: string; baseUrl: string; enabled: boolean; jwt?: any; canaryUrl?:string; canaryWeight?:number; shadowUrl?:string; };
 export default function App() {
   const [upstreams, setUpstreams] = useState<Upstream[]>([]);
   const [form, setForm] = useState<any>({ name:'', baseUrl:'', jwtRequired:false });
 
-  const load = async () => setUpstreams(await (await fetch('/admin/upstreams')).json());
+  const load = async () => setUpstreams(await (await fetch("http://localhost:3000/admin/upstreams")).json());
   useEffect(()=>{ load(); }, []);
 
   const save = async () => {
-    await fetch('/admin/upstreams', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
+    console.log(api('/admin/upstreams'));
+    await fetch("http://localhost:3000/admin/upstreams", { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
       name: form.name, baseUrl: form.baseUrl,
       jwtRequired: !!form.jwtRequired, jwksUri: form.jwksUri, jwtIssuer: form.jwtIssuer, jwtAudience: form.jwtAudience, jwtAlg: form.jwtAlg
     })});

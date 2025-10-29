@@ -12,7 +12,7 @@ export class CreateUpstreamDto {
   @IsString()
   name!: string;
 
-  @IsUrl()
+  @IsUrl({ require_tld: false })
   baseUrl!: string;
 
   @IsOptional()

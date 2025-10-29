@@ -1,25 +1,28 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { UpstreamsController } from './http/upstreams.controller';
+import { PrometheusModule } from '@willsoto/nestjs-prometheus';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { CacheModule } from '@nestjs/cache-manager';
+import KeyvRedis, { Keyv } from '@keyv/redis';
+import { PrismaService } from '@infra/prisma/service/prisma.service';
+import { JwtVerifier } from '@infra/auth/jwt-verifier';
+import { RouteRepository, UpstreamRepository } from '@app/ports';
 import { UpstreamPrismaRepo } from '@infra/prisma/upstream.prisma-repo';
 import { RoutePrismaRepo } from '@infra/prisma/route.prisma-repo';
-import { CreateUpstreamUseCase } from '@app/upstream/use-cases/create-upstream.usecase';
 import { ListUpstreamsUseCase } from '@app/upstream/use-cases/list-upstreams.usecase';
-import { PrismaService } from '@infra/prisma/service/prisma.service';
-import { RouteResolutionMiddleware } from './http/middleware/route-resolution.middleware';
-import { JwtVerifier } from '@infra/auth/jwt-verifier';
-import { UpstreamJwtGuard } from './security/upstream-jwt.guard';
-import { ProxyController } from './http/proxy.controller';
 import { CreateRouteUseCase } from '@app/route/use-cases/create-route.usecase';
+import { CreateUpstreamUseCase } from '@app/upstream/use-cases/create-upstream.usecase';
 import { ListRoutesUseCase } from '@app/route/use-cases/list-route.usecase';
+import { UpstreamsController } from './http/upstreams.controller';
 import { RoutesController } from './http/routes.controller';
-import { RouteRepository, UpstreamRepository } from '@app/ports';
-import { PrometheusModule } from '@willsoto/nestjs-prometheus';
-import { OtelModule } from '@infra/observability/otel.module';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { ProxyController } from './http/proxy.controller';
+import { UpstreamJwtGuard } from './security/upstream-jwt.guard';
+import { RouteResolutionMiddleware } from './http/middleware/route-resolution.middleware';
 import { ThrottleByIdentityGuard } from './security/throttle-by-identity.guard';
-import { CacheModule } from '@nestjs/cache-manager';
-import { redisStore } from 'cache-manager-redis-yet';
+import { OtelModule } from '@infra/observability/otel.module';
+import { RouteResolver } from '@infra/proxy/route.resolver';
+import { ProxyAdapter } from '@infra/proxy/proxy.adapter';
+import { ProxyService } from '@infra/proxy/proxy.service';
 
 @Module({
   imports: [
@@ -31,10 +34,10 @@ import { redisStore } from 'cache-manager-redis-yet';
     ThrottlerModule.forRoot([{ ttl: 60, limit: 120 }]),
     CacheModule.registerAsync({
       isGlobal: true,
-      useFactory: async () => ({
-        store: await redisStore({
-          url: process.env.REDIS_URL || 'redis://localhost:6379',
-        }),
+      useFactory: () => ({
+        store: new Keyv(
+          new KeyvRedis(process.env.REDIS_URL || 'redis://localhost:6379'),
+        ),
         ttl: 15,
       }),
     }),
@@ -43,11 +46,11 @@ import { redisStore } from 'cache-manager-redis-yet';
   providers: [
     PrismaService,
     JwtVerifier,
-    UpstreamJwtGuard,
-    ThrottleByIdentityGuard,
+
     //Repositories
     { provide: UpstreamRepository, useClass: UpstreamPrismaRepo },
     { provide: RouteRepository, useClass: RoutePrismaRepo },
+
     //upstream use cases
     {
       provide: CreateUpstreamUseCase,
@@ -61,7 +64,7 @@ import { redisStore } from 'cache-manager-redis-yet';
         new ListUpstreamsUseCase(upstreamRepo),
       inject: [UpstreamRepository],
     },
-    //upstream use cases
+    //route use cases
     {
       provide: CreateRouteUseCase,
       useFactory: (routeRepo: RouteRepository) =>
@@ -74,9 +77,19 @@ import { redisStore } from 'cache-manager-redis-yet';
         new ListRoutesUseCase(routeRepo),
       inject: [RouteRepository],
     },
+
+    //Proxy
+    RouteResolver,
+    ProxyAdapter,
+    ProxyService,
+
+    //Guard
+    UpstreamJwtGuard,
+    ThrottleByIdentityGuard,
   ],
+  exports: [ProxyService],
 })
-export class AppModule implements NestModule {
+export class RootModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(RouteResolutionMiddleware).forRoutes('*');
   }

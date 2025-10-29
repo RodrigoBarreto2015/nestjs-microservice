@@ -2,11 +2,25 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
-import { Upstream } from '@domain/upstream/upstream.entity';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { randomUUID } from 'node:crypto';
 import CircuitBreaker from 'opossum';
+import { Upstream } from '@domain/upstream/upstream.entity';
+import { Injectable } from '@nestjs/common';
 
+type RouteMatch = {
+  prefix: string;
+  rewrite?: string | null;
+  targetBase: string;
+};
+
+function joinPath(base: string, path: string) {
+  const b = base.endsWith('/') ? base.slice(0, -1) : base;
+  const p = path.startsWith('/') ? path : `/${path}`;
+  return `${b}${p}`;
+}
+
+@Injectable()
 export class ProxyAdapter {
   private breakers = new Map<string, CircuitBreaker>();
 
@@ -28,8 +42,8 @@ export class ProxyAdapter {
     req: FastifyRequest & { rawBody?: Buffer },
     url: string,
   ): Promise<Response | undefined> {
-    const path = req.raw.url ?? req.raw.url ?? '/';
-    const target = new URL(path, url).toString();
+    const path = req.raw.url ?? '/';
+    const target = joinPath(url, path);
 
     const incoming = req.headers as Record<
       string,
@@ -57,15 +71,21 @@ export class ProxyAdapter {
     }
   }
 
-  handler(upstream: Upstream, targetBase: string) {
+  handler(upstream: Upstream, match: RouteMatch) {
     const breaker = this.breaker(upstream);
 
     return async (req: FastifyRequest, reply: FastifyReply) => {
       try {
         await breaker.fire();
 
-        const path = req.raw.url ?? '/';
-        const target = new URL(path, targetBase).toString();
+        const originalPath = req.raw.url ?? '/';
+
+        const rewrittenPath =
+          match.rewrite && match.rewrite.length > 0
+            ? originalPath.replace(match.prefix, match.rewrite)
+            : originalPath;
+
+        const target = joinPath(match.targetBase, rewrittenPath);
 
         const incoming = req.headers as Record<
           string,
@@ -87,6 +107,11 @@ export class ProxyAdapter {
           (incoming['x-forwarded-for'] as string) ?? req.ip;
         headers['x-request-id'] =
           (incoming['x-request-id'] as string) ?? randomUUID();
+
+        // eslint-disable-next-line no-console
+        console.log(
+          `➡️  ${req.method} ${originalPath} -> ${match.targetBase}${rewrittenPath}`,
+        );
 
         await reply.from(target, {
           rewriteRequestHeaders: (_req, _headers) => ({

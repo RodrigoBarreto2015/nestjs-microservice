@@ -1,0 +1,17 @@
+{
+  "name": "user-api",
+  "version": "1.0.0",
+  "description": "simple server to test api gateway",
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2"
+  }
+}

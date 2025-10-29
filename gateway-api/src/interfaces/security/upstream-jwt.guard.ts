@@ -1,4 +1,3 @@
-import { JwtVerifier } from '@infra/auth/jwt-verifier';
 import {
   CanActivate,
   ExecutionContext,
@@ -6,6 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { FastifyRequest } from 'fastify';
+import { JwtVerifier } from '@infra/auth/jwt-verifier';
 
 @Injectable()
 export class UpstreamJwtGuard implements CanActivate {

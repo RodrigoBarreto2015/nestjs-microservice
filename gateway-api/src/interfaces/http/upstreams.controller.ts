@@ -1,7 +1,7 @@
-import { CreateUpstreamUseCase } from '@app/upstream/use-cases/create-upstream.usecase';
-import { ListUpstreamsUseCase } from '@app/upstream/use-cases/list-upstreams.usecase';
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { CreateUpstreamDto } from './dto/create-upstream.dto';
+import { CreateUpstreamUseCase } from '@app/upstream/use-cases/create-upstream.usecase';
+import { ListUpstreamsUseCase } from '@app/upstream/use-cases/list-upstreams.usecase';
 
 @Controller('admin/upstreams')
 export class UpstreamsController {
@@ -17,6 +17,7 @@ export class UpstreamsController {
 
   @Post()
   async create(@Body() dto: CreateUpstreamDto) {
+    console.log(dto);
     return this.createUpstreamUseCase.execute({
       name: dto.name,
       baseUrl: dto.baseUrl,
